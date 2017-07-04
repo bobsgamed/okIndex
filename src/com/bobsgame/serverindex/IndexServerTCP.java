@@ -22,6 +22,7 @@ import ch.qos.logback.classic.Logger;
 import com.bobsgame.IndexServerMain;
 import com.bobsgame.net.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
@@ -137,8 +138,12 @@ public class IndexServerTCP
 
 		//tcpServerBootstrap.setOption("broadcast", "true");
 
+
+		int serverPort = BobNet.INDEXServerTCPPort;
+		if(new File("/localServer").exists())serverPort++;
+
 		// Bind and start to accept incoming connections.
-		tcpChannel = tcpServerBootstrap.bind(new InetSocketAddress(BobNet.INDEXServerTCPPort));
+		tcpChannel = tcpServerBootstrap.bind(new InetSocketAddress(serverPort));
 
 		log.info("INDEX Server TCP ChannelID: "+tcpChannel.getId().toString());
 

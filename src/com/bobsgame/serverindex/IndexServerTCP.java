@@ -140,7 +140,7 @@ public class IndexServerTCP
 
 
 		int serverPort = BobNet.INDEXServerTCPPort;
-		if(new File("/localServer").exists())serverPort++;
+		//if(new File("/localServer").exists())serverPort++;
 
 		// Bind and start to accept incoming connections.
 		tcpChannel = tcpServerBootstrap.bind(new InetSocketAddress(serverPort));

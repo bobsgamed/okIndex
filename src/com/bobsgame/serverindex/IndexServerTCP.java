@@ -323,6 +323,8 @@ public class IndexServerTCP
 
 			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update)){incoming_INDEX_Tell_All_Servers_Bobs_Game_Hosting_Room_Update(e);return;}
 			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_Bobs_Game_Remove_Room)){incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room(e);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients)){incoming_INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients(e);return;}
+			if(message.startsWith(BobNet.INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients)){incoming_INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients(e);return;}
 
 
 		}
@@ -627,11 +629,11 @@ public class IndexServerTCP
 
 
 
-
+	
 	//===============================================================================================
 	public void incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room(MessageEvent e)
 	{//===============================================================================================
-
+		
 		//INDEX_Tell_All_Servers_Bobs_Game_Remove_Room,serverID,userID,roomString:
 		int serverID = -1;
 		int userID = -1;
@@ -642,10 +644,83 @@ public class IndexServerTCP
 		try{userID = Integer.parseInt(s.substring(0,s.indexOf(",")));}catch(NumberFormatException ex){ex.printStackTrace();}
 		s = s.substring(s.indexOf(",")+1);
 		String roomString = s.substring(0,s.indexOf(":"));
-
+		
 		if(serverID==-1)return;
 		if(userID==-1)return;
+		
+		
+		
+		for(int i=0;i<serverList.size();i++)
+		{
+			
+			if(serverList.get(i).serverID!=serverID)
+			{
+				
+				Channel c = serverList.get(i).channel;
+				
+				if(c.isConnected())
+				{
+					c.write(BobNet.Server_Bobs_Game_Remove_Room+serverID+","+userID+","+roomString+":"+BobNet.endline);
+				}
+				else
+				{
+					log.warn("channel is not connected in incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room. Did server drop connection?");
+				}
+			}
+		}
+		
+		
+	}
 
+	//===============================================================================================
+	public void incoming_INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients(MessageEvent e)
+	{//===============================================================================================
+		
+		//INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients,serverID,activityString:END:
+		int serverID = -1;
+		String s = (String) e.getMessage();
+		s = s.substring(s.indexOf(":")+1);//serverID
+		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
+		s = s.substring(s.indexOf(",")+1);
+		
+		String activityString = s.substring(0,s.indexOf(":END:"));
+		
+		if(serverID==-1)return;
+		
+		
+		for(int i=0;i<serverList.size();i++)
+		{
+			
+			if(serverList.get(i).serverID!=serverID)
+			{
+				
+				Channel c = serverList.get(i).channel;
+				
+				if(c.isConnected())
+				{
+					c.write(BobNet.Server_Send_Activity_Update_To_All_Clients+activityString+":END:"+BobNet.endline);
+				}
+				else
+				{
+					log.warn("channel is not connected in incoming_INDEX_Tell_All_Servers_To_Send_Activity_Update_To_All_Clients. Did server drop connection?");
+				}
+			}
+		}
+	}
+	//===============================================================================================
+	public void incoming_INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients(MessageEvent e)
+	{//===============================================================================================
+
+		//INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients,serverID,activityString:END:
+		int serverID = -1;
+		String s = (String) e.getMessage();
+		s = s.substring(s.indexOf(":")+1);//serverID
+		try{serverID = Integer.parseInt(s.substring(0,s.indexOf(',')));}catch(NumberFormatException ex){ex.printStackTrace();}
+		s = s.substring(s.indexOf(",")+1);
+		
+		String activityString = s.substring(0,s.indexOf(":END:"));
+
+		if(serverID==-1)return;
 
 
 		for(int i=0;i<serverList.size();i++)
@@ -658,16 +733,14 @@ public class IndexServerTCP
 
 				if(c.isConnected())
 				{
-					c.write(BobNet.Server_Bobs_Game_Remove_Room+serverID+","+userID+","+roomString+":"+BobNet.endline);
+					c.write(BobNet.Server_Send_Chat_Message_To_All_Clients+activityString+":END:"+BobNet.endline);
 				}
 				else
 				{
-					log.warn("channel is not connected in incoming_INDEX_Tell_All_Servers_Bobs_Game_Remove_Room. Did server drop connection?");
+					log.warn("channel is not connected in incoming_INDEX_Tell_All_Servers_To_Send_Chat_Message_To_All_Clients. Did server drop connection?");
 				}
 			}
 		}
-
-
 	}
 
 

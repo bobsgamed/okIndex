@@ -20,6 +20,7 @@ import java.util.*;
 import ch.qos.logback.classic.Logger;
 
 import com.bobsgame.IndexServerMain;
+
 import com.bobsgame.net.*;
 
 import java.io.File;
@@ -377,15 +378,22 @@ public class IndexServerTCP
 	public void incoming_INDEX_Register_Server_Request(MessageEvent e)
 	{//===============================================================================================
 
-		//INDEX_Register_Server_Request:serverID,ipAddress
+		//INDEX_Register_Server_Request:passCode,serverID,ipAddress
 		String s = (String) e.getMessage();
-		s = s.substring(s.indexOf(":")+1);//serverID,ipAddress
+		s = s.substring(s.indexOf(":")+1);//passCode,serverID,ipAddress
+		String passCode = s.substring(0, s.indexOf(","));
+		s = s.substring(s.indexOf(",")+1);
 		int serverID = -1;
 		try{serverID = Integer.parseInt(s.substring(0, s.indexOf(",")));}catch(NumberFormatException ex){ex.printStackTrace();return;}
 		s = s.substring(s.indexOf(",")+1);
-		String ipAddressString = s;
+		String ipAddressString = s.substring(0, s.indexOf(":"));
 
-
+		if(passCode.equals(PrivateCredentials.passwordSalt)==false)
+		{
+			e.getChannel().write(BobNet.Server_Register_Server_With_INDEX_Response+"Incorrect passcode, cannot register with index.:-1:"+BobNet.endline);
+			e.getChannel().close();
+		}
+		
 
 		BobsGameServer server = null;
 		if(serverID!=-1)
@@ -418,7 +426,7 @@ public class IndexServerTCP
 		serversByServerID.put(server.serverID,server);
 
 
-		e.getChannel().write(BobNet.Server_Register_Server_With_INDEX_Response+serverID+BobNet.endline);
+		e.getChannel().write(BobNet.Server_Register_Server_With_INDEX_Response+"Successfully registered with index.:"+serverID+":"+BobNet.endline);
 
 	}
 
